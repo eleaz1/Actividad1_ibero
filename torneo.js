@@ -238,6 +238,7 @@ db.createCollection("posiciones", {
   }
 });
 
+//Creacion coleccion "estadios"
 db.createCollection("estadios", {
   validator: {
     $jsonSchema: {
