@@ -1,3 +1,10 @@
+/*********************************************************************************************
+ * Universidad Iberoamericana
+ * Presentador por:
+ * Ivan Agudelo
+ * Jose Ducón
+ *********************************************************************************************/
+
 /* global use, db */
 // MongoDB Tournament
 // base de datos MongoDb que permita la gestión de los participantes a un torneo deportivo, 
@@ -8,6 +15,7 @@
 
 use('torneo');
 
+//Creacion coleccion "deportista"
 db.createCollection("deportista", {
     validator: {
         $jsonSchema: {
@@ -34,6 +42,7 @@ db.createCollection("deportista", {
     }
 })
 
+//Creacion coleccion "entrenador"
 db.createCollection("entrenador", {
     validator: {
         $jsonSchema: {
@@ -60,6 +69,7 @@ db.createCollection("entrenador", {
     }
 })
 
+//Creacion coleccion "equipo"
 db.createCollection("equipo", {
     validator: {
         $jsonSchema: {
@@ -72,14 +82,39 @@ db.createCollection("equipo", {
                 ciudad: {
                     bsonType: "string"
                 },
-                entrenador: {
-                    bsonType: "string"
+                tecnico: {
+                    bsonType: "object",
+                    properties: {
+                        _id: {
+                            bsonType: "string"
+                        },
+                        nomTecnico: {
+                            bsonType: "string"
+                        }
+                    }
                 },
+                jugadores:{
+                    bsonType:"array",
+                    items: {
+                        type: "object",
+                        additionalProperties: false,
+                        required:["jugador","posicion"],
+                        properties: {
+                            jugador: {
+                                bsonType: "string"
+                            },
+                            posicion: {
+                                bsonType: "string"
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 })
 
+//Creacion coleccion "arbitro"
 db.createCollection("arbitro", {
     validator: {
         $jsonSchema: {
@@ -103,11 +138,12 @@ db.createCollection("arbitro", {
     }
 })
 
+//Creacion coleccion "encuentro"
 db.createCollection("encuentro", {
     validator: {
         $jsonSchema: {
             bsonType: "object",
-            required: ["nombre"],
+            required: ["fecha"],
             properties: {
                 fecha: {
                     bsonType: "date"
@@ -121,8 +157,8 @@ db.createCollection("encuentro", {
                 equipo_local: {
                     bsonType: "object",
                     properties:{
-                        id: {
-                            bsonType: "int"
+                        _id: {
+                            bsonType: "string"
                         },
                         nombre: {
                             bsonType: "string"
@@ -162,7 +198,69 @@ db.createCollection("encuentro", {
     }
 })
 
-db.getCollection('deportista').insertMany([
-    { 'nombre': 'abc', 'cc': '16', 'nacimiento': new Date('2014-03-01T08:00:00Z') },
-    { 'nombre': 'jkl', 'cc': '15', 'nacimiento': new Date('2014-03-01T09:00:00Z') }
-]);
+//Creacion coleccion "posiciones"
+db.createCollection("posiciones", {
+  validator: {
+      $jsonSchema: {
+          bsonType: "object",
+          required: ["equipo", "Puntos", "PartidosJugados", "PartidosGanados", "PartidosEmpatados", "PartidosPerdidos"],
+          properties: {
+            equipo: {
+                bsonType: "object",
+                properties:{
+                    nombre: {
+                        bsonType: "string"
+                    }
+                }
+            },
+              Puntos: {
+                  bsonType: "int",
+                  minimum: 0
+              },
+              PartidosJugados: {
+                  bsonType: "int",
+                  minimum: 0
+              },
+              PartidosGanados: {
+                  bsonType: "int",
+                  minimum: 0
+              },
+              PartidosEmpatados: {
+                  bsonType: "int",
+                  minimum: 0
+              },
+              PartidosPerdidos: {
+                  bsonType: "int",
+                  minimum: 0
+              }
+          }
+      }
+  }
+});
+
+db.createCollection("estadios", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["nombre", "capacidad", "ciudad"],
+      properties: {
+        nombre: {
+          bsonType: "string"
+        },
+        capacidad: {
+          bsonType: "int",
+          minimum: 0
+        },
+        ciudad: {
+          bsonType: "string"
+        },
+        inaugurado: {
+          bsonType: "date"
+        }
+      }
+    }
+  }
+});
+
+
+//Se crean los inserts de las colecciones.
