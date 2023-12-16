@@ -24,6 +24,7 @@ services:
     links:
       - mongo-shard1a
       - mongo-shard2a
+      # - mongo-shard3a
 
   mongo-shard1a:
     container_name: mongo-shard1a
@@ -64,6 +65,26 @@ services:
     ports:
       - 27122:27017
     entrypoint: [ "/usr/bin/mongod", "--port", "27017", "--shardsvr", "--bind_ip_all", "--replSet", "iberoshard2" ]
+
+  # mongo-shard3a:
+  #   container_name: mongo-shard3a
+  #   image: mongo
+  #   volumes:
+  #     - ./shard3-init.js:/scripts/shard3-init.js
+  #   networks:
+  #     - mongo-network-sharded
+  #   ports:
+  #     - 27123:27017
+  #   entrypoint: [ "/usr/bin/mongod", "--port", "27017", "--shardsvr", "--bind_ip_all", "--replSet", "iberoshard3" ]
+
+  # mongo-shard3b:
+  #   container_name: mongo-shard3b
+  #   image: mongo
+  #   networks:
+  #     - mongo-network-sharded
+  #   ports:
+  #     - 27124:27017
+  #   entrypoint: [ "/usr/bin/mongod", "--port", "27017", "--shardsvr", "--bind_ip_all", "--replSet", "iberoshard3" ]
 
 networks:
   mongo-network-sharded:

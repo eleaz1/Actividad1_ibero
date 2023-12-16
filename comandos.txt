@@ -7,6 +7,8 @@ docker exec configsvr1 sh -c "mongosh < /scripts/configserver-init.js"
 //Configurar el conjunto de réplicas
 docker exec mongo-shard1a sh -c "mongosh < /scripts/shard1-init.js"
 docker exec mongo-shard2a sh -c "mongosh < /scripts/shard2-init.js"
+docker exec mongo-shard3a sh -c "mongosh < /scripts/shard3-init.js"
+
 
 //Finalmente, configuramos el router a partir del script router-init.js donde estamos indicándole al router qué nodos forman parte del particionado:
 docker exec router1 sh -c "mongosh < /scripts/router-init.js"
@@ -20,8 +22,14 @@ for (var i=0; i<10000; i++) {
     db.usuarios.insertOne({"login":"usuario" + i, "nombre":"nombre" + i*2, "fcreacion": new Date()},  { writeConcern: { w:"0"}});
 }
 
+for (var i=0; i<10000; i++) {
+    db.arbitro.insertOne({"cc":i, "nombre":"nombre" + i, "fcreacion": new Date()},  { writeConcern: { w:"0"}});
+}
+
 //Una vez creados, comprobamos que se han insertado:
 db.usuarios.countDocuments()
+db.arbitro.countDocuments()
+
 db.usuarios.findOne()
 
 //se activa el sharding a la db
@@ -32,6 +40,8 @@ sh.status()
 //Antes de habilitar el sharding para una determinada colección, tenemos que crear un índice sobre la shard key (si la colección estuviera vacía, no necesitamos crear el índice, ya que al indicar la shard key, MongoDB automáticamente creará el índice por nosotros):
 db.usuarios.createIndex({"login": 1})
 sh.shardCollection("torneo.usuarios", {"login": 1}, false)
+db.arbitro.createIndex({"cc": 1})
+sh.shardCollection("torneo.arbitro", {"cc": 1}, false)
 
 db.usuarios.getShardDistribution()
 
@@ -44,8 +54,25 @@ db.usuarios.countDocuments()
 //Si al insertar más datos no se reparten los datos de forma automática, podemos forzarlo mediante las operaciones sh.splitAt, donde le indicamos el valor donde el fragmento en dos, y sh.splitFind que realiza la división por la mediana, de manera que ambos fragmentos deberían ser semejantes.
 //Por ejemplo:
 sh.splitFind("torneo.usuarios", {"login":1})
+sh.splitFind("torneo.arbitro", {"cc":1})
+
 
 db.usuarios.getShardDistribution()
 
 sh.getBalancerState()
 sh.isBalancerRunning()
+
+for (var i=30000; i<40000; i++) {
+    db.usuarios.insertOne({"login":"usuario" + i, "nombre":"nombre" + i*2, "fcreacion": new Date()},  { writeConcern: { w:"0"}});
+}
+
+Consultas
+{
+  "fcreacion": {
+    "$gte": ISODate("2023-12-15T00:00:00Z"),
+    "$lt": ISODate("2023-12-15T02:45:50Z")
+  }
+}
+
+
+{cc: {  "$gte": 5000}}
